@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DeleteContactDialog } from "@/components/delete-contact-dialog"
 import { AddEditContactModal } from "@/components/add-edit-contact-modal"
 
-import { Mail, Phone, Calendar, Edit, Trash2, Briefcase, Cake } from "lucide-react"
+import { Mail, Phone, Calendar, Edit, Trash2, Briefcase, Cake, X } from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
 
@@ -35,7 +35,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onCloseAction}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-2xl">Contact Details</DialogTitle>
             <div className="flex gap-2">
@@ -51,6 +51,15 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Delete</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 text-black-500"
+                onClick={onCloseAction}
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
               </Button>
             </div>
           </DialogHeader>

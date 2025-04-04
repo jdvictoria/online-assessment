@@ -13,7 +13,19 @@ import { Textarea } from "@/components/ui/textarea"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
-import { Camera, Upload, Calendar, User, Mail, Phone, Building, FileText, Briefcase, Cake } from "lucide-react"
+import {
+  Camera,
+  Upload,
+  Calendar,
+  User,
+  Mail,
+  Phone,
+  Building,
+  FileText,
+  Briefcase,
+  Cake,
+  X
+} from "lucide-react"
 
 interface AddEditContactModalProps {
   isOpen: boolean
@@ -154,11 +166,22 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-2xl text-[#1E7FDF]">
             {isEditMode ? "Edit Contact" : "Add New Contact"}
           </DialogTitle>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-black-500"
+              onClick={onCloseAction}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 py-4">
