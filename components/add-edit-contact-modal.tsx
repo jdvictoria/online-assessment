@@ -35,7 +35,7 @@ interface AddEditContactModalProps {
 }
 
 export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactModalProps) {
-  const { addContact, updateContact, validateEmail, selectedContact, modalMode } = useContacts()
+  const { validateEmail, selectedContact, modalMode } = useContacts()
 
   const isEditMode = modalMode === "edit"
 
@@ -48,8 +48,8 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
     role: "",
     birthday: "",
     notes: "",
-    profileImage: "/placeholder.svg?height=100&width=100",
-    lastContactDate: new Date().toISOString().split("T")[0],
+    image: "/placeholder.svg?height=100&width=100",
+    lastContact: new Date().toISOString().split("T")[0],
   })
 
   const [errors, setErrors] = useState({
@@ -58,7 +58,7 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
     email: false,
   })
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Populate form data when editing an existing contact
@@ -70,13 +70,13 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
         email: selectedContact.email,
         phone: selectedContact.phone || "",
         company: selectedContact.company || "",
-        role: selectedContact.role || "",
+        role: selectedContact.occupation || "",
         birthday: selectedContact.birthday || "",
         notes: selectedContact.notes || "",
-        profileImage: selectedContact.profileImage,
-        lastContactDate: selectedContact.lastContactDate,
+        image: selectedContact.image || "",
+        lastContact: selectedContact.lastContact,
       })
-      setImagePreview(selectedContact.profileImage)
+      setImagePreview(selectedContact.image || "")
     } else {
       // Reset form for adding a new contact
       setFormData({
@@ -88,10 +88,10 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
         role: "",
         birthday: "",
         notes: "",
-        profileImage: "/placeholder.svg?height=100&width=100",
-        lastContactDate: new Date().toISOString().split("T")[0],
+        image: "/placeholder.svg?height=100&width=100",
+        lastContact: new Date().toISOString().split("T")[0],
       })
-      setImagePreview(null)
+      setImagePreview("")
     }
   }, [isEditMode, selectedContact, isOpen])
 
@@ -116,7 +116,7 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
       reader.onloadend = () => {
         const result = reader.result as string
         setImagePreview(result)
-        setFormData((prev) => ({ ...prev, profileImage: result }))
+        setFormData((prev) => ({ ...prev, image: result }))
       }
       reader.readAsDataURL(file)
     }
@@ -158,9 +158,9 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
     }
 
     if (isEditMode && selectedContact) {
-      updateContact(selectedContact.id, formData)
+      // updateContact(selectedContact.id, formData)
     } else {
-      addContact(formData)
+      // addContact(formData)
     }
 
     onCloseAction()
@@ -330,21 +330,21 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
                   Birthday
                 </Label>
                 <CalendarInput
-                  id="lastContactDate"
-                  name="lastContactDate"
+                  id="lastContact"
+                  name="lastContact"
                   value={formData.birthday}
                   onChange={handleChange}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="lastContactDate" className="flex items-center gap-2">
+                <Label htmlFor="lastContact" className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-[#1E7FDF]" />
                   Last Contact Date
                 </Label>
                 <CalendarInput
-                  id="lastContactDate"
-                  name="lastContactDate"
-                  value={formData.lastContactDate}
+                  id="lastContact"
+                  name="lastContact"
+                  value={formData.lastContact}
                   onChange={handleChange}
                 />
               </div>

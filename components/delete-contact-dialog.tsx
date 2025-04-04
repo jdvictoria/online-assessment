@@ -21,10 +21,10 @@ interface DeleteContactDialogProps {
 }
 
 export function DeleteContactDialog({ isOpen, onCloseAction, contactId, contactName }: DeleteContactDialogProps) {
-  const { deleteContact } = useContacts()
+  const { } = useContacts()
 
   const handleDelete = () => {
-    deleteContact(contactId)
+    // deleteContact(contactId)
     onCloseAction()
   }
 

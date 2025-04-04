@@ -44,7 +44,7 @@ export const fetchAllContacts = query({
   handler: async (ctx) => {
     const contacts = await ctx.db.query("contact").collect();
 
-    const enrichedContacts = await Promise.all(
+    return await Promise.all(
       contacts.map(async (contact) => {
         const imageUrl = contact.image
           ? await ctx.storage.getUrl(contact.image)
@@ -56,8 +56,6 @@ export const fetchAllContacts = query({
         };
       })
     );
-
-    return { data: enrichedContacts };
   },
 });
 

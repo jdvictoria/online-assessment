@@ -25,9 +25,9 @@ export function ContactCard({ contact, onClickAction }: ContactCardProps) {
       <CardContent className="p-0">
         <div className="flex items-center p-4 gap-4">
           <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
-            {contact.profileImage ? (
+            {contact.image ? (
               <Image
-                src={contact.profileImage || "/placeholder.svg"}
+                src={contact.image || "/placeholder.svg"}
                 alt={`${contact.firstName} ${contact.lastName}`}
                 fill
                 className="object-cover"
@@ -43,15 +43,15 @@ export function ContactCard({ contact, onClickAction }: ContactCardProps) {
               {contact.firstName} {contact.lastName}
             </h3>
             <div className="text-sm text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
-              {contact.role && contact.company ? (
+              {contact.occupation && contact.company ? (
                 <span>
-                  {contact.role} <span className="mx-1 text-xs">•</span> {contact.company}
+                  {contact.occupation} <span className="mx-1 text-xs">•</span> {contact.company}
                 </span>
               ) : (
-                <span>{contact.role || contact.company}</span>
+                <span>{contact.occupation || contact.company}</span>
               )}
             </div>
-            <p className="text-xs text-[#1E7FDF] mt-1">Last contact: {formatDate(contact.lastContactDate)}</p>
+            <p className="text-xs text-[#1E7FDF] mt-1">Last contact: {formatDate(contact.lastContact)}</p>
           </div>
         </div>
       </CardContent>

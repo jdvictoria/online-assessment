@@ -67,9 +67,9 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
           <div className="mt-4 space-y-6">
             <div className="flex flex-col items-center text-center gap-4">
               <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
-                {contact.profileImage ? (
+                {contact.image ? (
                   <Image
-                    src={contact.profileImage || "/placeholder.svg"}
+                    src={contact.image || "/placeholder.svg"}
                     alt={`${contact.firstName} ${contact.lastName}`}
                     fill
                     className="object-cover"
@@ -85,7 +85,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 <h2 className="text-2xl font-bold">
                   {contact.firstName} {contact.lastName}
                 </h2>
-                {contact.role && <p className="text-muted-foreground">{contact.role}</p>}
+                {contact.occupation && <p className="text-muted-foreground">{contact.occupation}</p>}
                 {contact.company && <p className="text-muted-foreground">{contact.company}</p>}
               </div>
             </div>
@@ -111,15 +111,15 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 </div>
               )}
 
-              {(contact.role || contact.company) && (
+              {(contact.occupation || contact.company) && (
                 <div className="flex items-center gap-3">
                   <div className="bg-[#1E7FDF] p-2 rounded-full">
                     <Briefcase className="h-4 w-4 text-white" />
                   </div>
                   <span>
-                    {contact.role && contact.company
-                      ? `${contact.role} at ${contact.company}`
-                      : contact.role || contact.company}
+                    {contact.occupation && contact.company
+                      ? `${contact.occupation} at ${contact.company}`
+                      : contact.occupation || contact.company}
                   </span>
                 </div>
               )}
@@ -137,7 +137,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 <div className="bg-[#1E7FDF] p-2 rounded-full">
                   <Calendar className="h-4 w-4 text-white" />
                 </div>
-                <span>Last contact: {formatDate(contact.lastContactDate)}</span>
+                <span>Last contact: {formatDate(contact.lastContact)}</span>
               </div>
             </div>
 
@@ -154,7 +154,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
       <DeleteContactDialog
         isOpen={isDeleteDialogOpen}
         onCloseAction={() => setIsDeleteDialogOpen(false)}
-        contactId={contact.id}
+        contactId={contact._id}
         contactName={`${contact.firstName} ${contact.lastName}`}
       />
 
