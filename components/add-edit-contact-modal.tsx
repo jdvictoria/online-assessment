@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+
+import { CalendarInput } from "@/components/calendar-input";
 
 import {
   Camera,
@@ -26,6 +27,7 @@ import {
   Cake,
   X
 } from "lucide-react"
+
 
 interface AddEditContactModalProps {
   isOpen: boolean
@@ -326,13 +328,11 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
                   <Cake className="h-4 w-4 text-[#1E7FDF]" />
                   Birthday
                 </Label>
-                <Input
-                  id="birthday"
-                  name="birthday"
-                  type="date"
+                <CalendarInput
+                  id="lastContactDate"
+                  name="lastContactDate"
                   value={formData.birthday}
                   onChange={handleChange}
-                  className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
                 />
               </div>
               <div className="grid gap-2">
@@ -340,13 +340,11 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
                   <Calendar className="h-4 w-4 text-[#1E7FDF]" />
                   Last Contact Date
                 </Label>
-                <Input
+                <CalendarInput
                   id="lastContactDate"
                   name="lastContactDate"
-                  type="date"
                   value={formData.lastContactDate}
                   onChange={handleChange}
-                  className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
                 />
               </div>
             </div>
