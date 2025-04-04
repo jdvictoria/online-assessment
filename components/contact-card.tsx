@@ -19,7 +19,7 @@ interface ContactCardProps {
 export function ContactCard({ contact, onClickAction }: ContactCardProps) {
   return (
     <Card
-      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow border-[#1E7FDF]/10 hover:border-[#1E7FDF]/30"
+      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow border-[#1E7FDF]/10 hover:border-[#1E7FDF]/30 p-0"
       onClick={onClickAction}
     >
       <CardContent className="p-0">
@@ -42,13 +42,11 @@ export function ContactCard({ contact, onClickAction }: ContactCardProps) {
             <h3 className="font-medium text-lg truncate">
               {contact.firstName} {contact.lastName}
             </h3>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground truncate">
+            <div className="text-sm text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
               {contact.role && contact.company ? (
-                <>
-                  <span>{contact.role}</span>
-                  <span className="text-xs mx-1">•</span>
-                  <span>{contact.company}</span>
-                </>
+                <span>
+                  {contact.role} <span className="mx-1 text-xs">•</span> {contact.company}
+                </span>
               ) : (
                 <span>{contact.role || contact.company}</span>
               )}
