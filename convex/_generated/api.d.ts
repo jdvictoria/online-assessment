@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as contact from "../contact.js";
+import type * as media from "../media.js";
 import type * as schemas_contact from "../schemas/contact.js";
 import type * as utils from "../utils.js";
 
@@ -27,6 +28,7 @@ import type * as utils from "../utils.js";
  */
 declare const fullApi: ApiFromModules<{
   contact: typeof contact;
+  media: typeof media;
   "schemas/contact": typeof schemas_contact;
   utils: typeof utils;
 }>;
