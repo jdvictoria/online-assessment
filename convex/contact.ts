@@ -42,7 +42,22 @@ export const deleteContact = mutation({
 export const fetchAllContacts = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("contact").collect();
+    const contacts = await ctx.db.query("contact").collect();
+
+    const enrichedContacts = await Promise.all(
+      contacts.map(async (contact) => {
+        const imageUrl = contact.image
+          ? await ctx.storage.getUrl(contact.image)
+          : null;
+
+        return {
+          ...contact,
+          image: imageUrl,
+        };
+      })
+    );
+
+    return { data: enrichedContacts };
   },
 });
 
@@ -50,8 +65,16 @@ export const fetchContact = query({
   args: {
     contactId: v.id("contact"),
   },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.contactId);
+  handler: async (ctx, { contactId }) => {
+    const contact = await ctx.db.get(contactId);
+
+    const imageUrl = contact?.image ? await ctx.storage.getUrl(contact.image) : null;
+
+    return {
+      data: {
+        ...contact,
+        image: imageUrl,
+      },
+    };
   },
 });
-
