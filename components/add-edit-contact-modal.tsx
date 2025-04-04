@@ -185,11 +185,12 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
             </Button>
           </div>
         </DialogHeader>
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 py-4">
             <div className="flex justify-center">
               <div className="relative">
-                <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
+                <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
                   {imagePreview ? (
                     <Image
                       src={imagePreview || "/placeholder.svg"}
@@ -199,7 +200,7 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-slate-400">
-                      <Camera size={32} />
+                      <Camera size={40} />
                     </div>
                   )}
                 </div>
@@ -208,7 +209,7 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
                   onClick={triggerFileInput}
                   className="absolute bottom-0 right-0 bg-[#1E7FDF] text-white p-1.5 rounded-full shadow-md hover:bg-[#1E7FDF]/90 transition-colors"
                 >
-                  <Upload size={14} />
+                  <Upload size={20} />
                 </button>
                 <input
                   type="file"

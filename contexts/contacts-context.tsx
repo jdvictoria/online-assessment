@@ -52,7 +52,7 @@ const initialContacts: Contact[] = [
     birthday: "1985-06-15",
     lastContactDate: "2023-10-15",
     notes: "Met at the tech conference in San Francisco",
-    profileImage: "/placeholder.svg?height=100&width=100",
+    profileImage: "",
   },
   {
     id: "2",
@@ -65,7 +65,7 @@ const initialContacts: Contact[] = [
     birthday: "1990-03-22",
     lastContactDate: "2023-11-02",
     notes: "Potential client for the new project",
-    profileImage: "/placeholder.svg?height=100&width=100",
+    profileImage: "",
   },
   {
     id: "3",
@@ -78,7 +78,7 @@ const initialContacts: Contact[] = [
     birthday: "1988-11-10",
     lastContactDate: "2023-11-20",
     notes: "Graphic designer with 5 years of experience",
-    profileImage: "/placeholder.svg?height=100&width=100",
+    profileImage: "",
   },
 ]
 

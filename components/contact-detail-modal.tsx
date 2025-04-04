@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import Image from "next/image"
 
 import { useContacts } from "@/contexts/contacts-context"
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DeleteContactDialog } from "@/components/delete-contact-dialog"
 import { AddEditContactModal } from "@/components/add-edit-contact-modal"
 
-import { Mail, Phone, Calendar, Edit, Trash2, Briefcase, Cake, X } from "lucide-react"
+import {Mail, Phone, Calendar, Edit, Trash2, Briefcase, Cake, X, UserRound} from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
 
@@ -66,14 +66,21 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
 
           <div className="mt-4 space-y-6">
             <div className="flex flex-col items-center text-center gap-4">
-              <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20">
-                <Image
-                  src={contact.profileImage || "/placeholder.svg"}
-                  alt={`${contact.firstName} ${contact.lastName}`}
-                  fill
-                  className="object-cover"
-                />
+              <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
+                {contact.profileImage ? (
+                  <Image
+                    src={contact.profileImage || "/placeholder.svg"}
+                    alt={`${contact.firstName} ${contact.lastName}`}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-slate-400">
+                    <UserRound size={40} />
+                  </div>
+                )}
               </div>
+
               <div>
                 <h2 className="text-2xl font-bold">
                   {contact.firstName} {contact.lastName}
