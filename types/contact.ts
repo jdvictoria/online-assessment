@@ -1,13 +1,15 @@
+import { Id } from "@/convex/_generated/dataModel";
+
 export interface Contact {
-  id: string
+  _id: Id<"contact">;
   firstName: string
   lastName: string
   email: string
+  lastContact: string
   phone?: string
   company?: string
-  role?: string
+  occupation?: string
   birthday?: string
-  lastContactDate: string
   notes?: string
-  profileImage: string
+  image?: string
 }
