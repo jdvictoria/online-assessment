@@ -1,7 +1,6 @@
 "use client"
 
-import { useContacts } from "@/contexts/contacts-context"
-
+import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +12,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+
 interface DeleteContactDialogProps {
   isOpen: boolean
   onCloseAction: () => void
@@ -21,11 +24,16 @@ interface DeleteContactDialogProps {
 }
 
 export function DeleteContactDialog({ isOpen, onCloseAction, contactId, contactName }: DeleteContactDialogProps) {
-  const { } = useContacts()
+  const deleteContact = useMutation(api.contact.deleteContact)
 
-  const handleDelete = () => {
-    // deleteContact(contactId)
-    onCloseAction()
+  const handleDelete = async () => {
+    try {
+      onCloseAction()
+      toast("Contact has been deleted")
+      await deleteContact({ contactId: contactId as Id<"contact"> })
+    } catch (error) {
+      console.error("Error deleting contact:", error)
+    }
   }
 
   return (

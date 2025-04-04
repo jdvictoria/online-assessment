@@ -153,7 +153,10 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
 
       <DeleteContactDialog
         isOpen={isDeleteDialogOpen}
-        onCloseAction={() => setIsDeleteDialogOpen(false)}
+        onCloseAction={() => {
+          onCloseAction();
+          setIsDeleteDialogOpen(false)
+        }}
         contactId={contact._id}
         contactName={`${contact.firstName} ${contact.lastName}`}
       />

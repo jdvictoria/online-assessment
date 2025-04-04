@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, createContext, useContext, useReducer, type ReactNode } from "react"
+import React, { useEffect, createContext, useContext, useReducer, type ReactNode, useMemo } from "react"
 
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -26,13 +26,12 @@ interface ContactsState {
 }
 
 interface ContactsContextType extends ContactsState {
-  filteredContacts: Contact[]
+  enrichedList: Contact[]
   dispatch: React.Dispatch<ActionType>
   updateSearchQuery: (query: string) => void
   updateSortDirection: (direction: SortDirection) => void
   selectContact: (contact: Contact | null) => void
   setModalMode: (mode: ModalMode) => void
-  validateEmail: (email: string) => boolean
 }
 
 const initialState: ContactsState = {
@@ -73,7 +72,8 @@ export function ContactsProvider({ children }: { children: ReactNode }) {
     }
   }, [contacts])
 
-  const filteredContacts = (() => {
+  // Memoize enrichedList calculation
+  const enrichedList = useMemo(() => {
     const filtered = state.contacts.filter((contact) =>
       [`${contact.firstName} ${contact.lastName}`, contact.email, contact.company, contact.occupation]
         .filter(Boolean)
@@ -89,7 +89,9 @@ export function ContactsProvider({ children }: { children: ReactNode }) {
     }
 
     return filtered
-  })()
+  }, [state.contacts, state.searchQuery, state.sortDirection])
+
+  //
 
   const updateSearchQuery = (query: string) =>
     dispatch({ type: "SET_SEARCH_QUERY", payload: query })
@@ -103,20 +105,16 @@ export function ContactsProvider({ children }: { children: ReactNode }) {
   const setModalMode = (mode: ModalMode) =>
     dispatch({ type: "SET_MODAL_MODE", payload: mode })
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-
   return (
     <ContactsContext.Provider
       value={{
         ...state,
-        filteredContacts,
+        enrichedList,
         dispatch,
         updateSearchQuery,
         updateSortDirection,
         selectContact,
         setModalMode,
-        validateEmail,
       }}
     >
       {children}

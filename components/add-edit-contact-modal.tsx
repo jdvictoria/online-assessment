@@ -28,14 +28,13 @@ import {
   X
 } from "lucide-react"
 
-
 interface AddEditContactModalProps {
   isOpen: boolean
   onCloseAction: () => void
 }
 
 export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactModalProps) {
-  const { validateEmail, selectedContact, modalMode } = useContacts()
+  const { selectedContact, modalMode } = useContacts()
 
   const isEditMode = modalMode === "edit"
 
@@ -127,6 +126,9 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
   }
 
   const validateForm = () => {
+    const validateEmail = (email: string) =>
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
     const newErrors = {
       firstName: !formData.firstName.trim(),
       lastName: !formData.lastName.trim(),
