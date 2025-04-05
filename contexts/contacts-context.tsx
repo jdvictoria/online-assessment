@@ -1,231 +1,149 @@
 "use client"
 
-import type React from "react"
+import React, { useEffect, createContext, useContext, useReducer, type ReactNode, useMemo } from "react"
 
-import { createContext, useContext, useReducer, type ReactNode } from "react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 
 import type { Contact } from "@/types/contact"
 
-type ActionType =
-  | { type: "ADD_CONTACT"; payload: Omit<Contact, "id"> }
-  | { type: "UPDATE_CONTACT"; payload: { id: string; contact: Omit<Contact, "id"> } }
-  | { type: "DELETE_CONTACT"; payload: string }
-  | { type: "SET_SEARCH_QUERY"; payload: string }
-  | { type: "SET_SORT_DIRECTION"; payload: SortDirection }
-  | { type: "SELECT_CONTACT"; payload: Contact | null }
-  | { type: "SET_MODAL_MODE"; payload: ModalMode }
-
+// Type for sorting direction, which can be 'none', 'asc', or 'desc'
 type SortDirection = "none" | "asc" | "desc"
+
+// Type for modal mode, which can be 'add' or 'edit'
 type ModalMode = "add" | "edit"
 
+// Action types: Defines all possible actions that can be dispatched to the reducer.
+type ActionType =
+  | { type: "SET_CONTACTS"; payload: Contact[] } // Set the contacts list
+  | { type: "SET_SEARCH_QUERY"; payload: string } // Update the search query
+  | { type: "SET_SORT_DIRECTION"; payload: SortDirection } // Set the sorting direction for contacts
+  | { type: "SELECT_CONTACT"; payload: Contact | null } // Select a specific contact or deselect
+  | { type: "SET_MODAL_MODE"; payload: ModalMode } // Set the current modal mode (add or edit)
+
+// Contacts state: Defines the shape of the state managed by the reducer.
 interface ContactsState {
-  contacts: Contact[]
-  searchQuery: string
-  sortDirection: SortDirection
-  selectedContact: Contact | null
-  modalMode: ModalMode
+  contacts: Contact[] // List of contacts
+  searchQuery: string // Search query used to filter contacts
+  sortDirection: SortDirection // Sort direction for contacts
+  selectedContact: Contact | null // Currently selected contact
+  modalMode: ModalMode // Current modal mode (add or edit)
 }
 
+// ContactsContextType: Defines the context value, including state and dispatch functions.
 interface ContactsContextType extends ContactsState {
-  filteredContacts: Contact[]
-  dispatch: React.Dispatch<ActionType>
-  addContact: (contact: Omit<Contact, "id">) => void
-  updateContact: (id: string, updatedContact: Omit<Contact, "id">) => void
-  deleteContact: (id: string) => void
-  updateSearchQuery: (query: string) => void
-  updateSortDirection: (direction: SortDirection) => void
-  selectContact: (contact: Contact | null) => void
-  setModalMode: (mode: ModalMode) => void
-  validateEmail: (email: string) => boolean
+  enrichedList: Contact[] // Enriched list of contacts based on search and sorting
+  dispatch: React.Dispatch<ActionType> // Dispatch function to update the state
+  updateSearchQuery: (query: string) => void // Function to update the search query
+  updateSortDirection: (direction: SortDirection) => void // Function to update the sort direction
+  selectContact: (contact: Contact | null) => void // Function to select a contact
+  setModalMode: (mode: ModalMode) => void // Function to set the modal mode
 }
 
-// Initial state
-const initialContacts: Contact[] = [
-  {
-    id: "1",
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    phone: "+1 (555) 123-4567",
-    company: "Tech Innovations",
-    role: "Product Manager",
-    birthday: "1985-06-15",
-    lastContactDate: "2023-10-15",
-    notes: "Met at the tech conference in San Francisco",
-    profileImage: "",
-  },
-  {
-    id: "2",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 987-6543",
-    company: "Digital Solutions",
-    role: "Software Engineer",
-    birthday: "1990-03-22",
-    lastContactDate: "2023-11-02",
-    notes: "Potential client for the new project",
-    profileImage: "",
-  },
-  {
-    id: "3",
-    firstName: "Emily",
-    lastName: "Johnson",
-    email: "emily.j@example.com",
-    phone: "+1 (555) 234-5678",
-    company: "Creative Designs",
-    role: "Graphic Designer",
-    birthday: "1988-11-10",
-    lastContactDate: "2023-11-20",
-    notes: "Graphic designer with 5 years of experience",
-    profileImage: "",
-  },
-]
-
+// Initial state: Default state values for the contacts management
 const initialState: ContactsState = {
-  contacts: initialContacts,
+  contacts: [],
   searchQuery: "",
-  sortDirection: "none",
+  sortDirection: "none", // No sorting by default
   selectedContact: null,
-  modalMode: "add",
+  modalMode: "add", // Default mode is 'add'
 }
 
-// Reducer function
+// Reducer function: Manages state changes based on the dispatched actions.
 function contactsReducer(state: ContactsState, action: ActionType): ContactsState {
   switch (action.type) {
-    case "ADD_CONTACT":
-      return {
-        ...state,
-        contacts: [...state.contacts, { ...action.payload, id: Date.now().toString() }],
-      }
-
-    case "UPDATE_CONTACT":
-      return {
-        ...state,
-        contacts: state.contacts.map((contact) =>
-          contact.id === action.payload.id ? { ...action.payload.contact, id: action.payload.id } : contact,
-        ),
-        selectedContact:
-          state.selectedContact?.id === action.payload.id
-            ? { ...action.payload.contact, id: action.payload.id }
-            : state.selectedContact,
-      }
-
-    case "DELETE_CONTACT":
-      return {
-        ...state,
-        contacts: state.contacts.filter((contact) => contact.id !== action.payload),
-        selectedContact: state.selectedContact?.id === action.payload ? null : state.selectedContact,
-      }
-
+    case "SET_CONTACTS":
+      // Set the list of contacts in the state
+      return { ...state, contacts: action.payload }
     case "SET_SEARCH_QUERY":
-      return {
-        ...state,
-        searchQuery: action.payload,
-      }
-
+      // Update the search query in the state
+      return { ...state, searchQuery: action.payload }
     case "SET_SORT_DIRECTION":
-      return {
-        ...state,
-        sortDirection: action.payload,
-      }
-
+      // Update the sort direction in the state
+      return { ...state, sortDirection: action.payload }
     case "SELECT_CONTACT":
-      return {
-        ...state,
-        selectedContact: action.payload,
-      }
-
+      // Select or deselect a contact
+      return { ...state, selectedContact: action.payload }
     case "SET_MODAL_MODE":
-      return {
-        ...state,
-        modalMode: action.payload,
-      }
-
+      // Set the current modal mode (add or edit)
+      return { ...state, modalMode: action.payload }
     default:
       return state
   }
 }
 
+// Create context: Initializes the context for managing contacts state and actions.
 const ContactsContext = createContext<ContactsContextType | undefined>(undefined)
 
+/**
+ * ContactsProvider component.
+ * This component provides the contacts state and actions to its children through context.
+ *
+ * @param {ReactNode} children - The child components that will have access to the context.
+ * @returns {JSX.Element} The ContactsContext provider wrapping the children components.
+ */
 export function ContactsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(contactsReducer, initialState)
 
-  // Derived state - filtered contacts
-  const filteredContacts = (() => {
-    // First filter by search query
-    let filtered = state.contacts.filter(
-      (contact) =>
-        `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-        contact.email.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-        contact.company?.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-        contact.role?.toLowerCase().includes(state.searchQuery.toLowerCase()),
+  // Fetch contacts using Convex's useQuery hook
+  const contacts = useQuery(api.contact.fetchAllContacts)
+
+  useEffect(() => {
+    // When contacts data is available, dispatch the SET_CONTACTS action
+    if (contacts) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      dispatch({ type: "SET_CONTACTS", payload: contacts })
+    }
+  }, [contacts])
+
+  // Memoized enrichedList calculation
+  const enrichedList = useMemo(() => {
+    // Filter contacts based on the search query
+    const filtered = state.contacts.filter((contact) =>
+      [`${contact.firstName} ${contact.lastName}`, contact.email, contact.company, contact.occupation]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(state.searchQuery.toLowerCase()))
     )
 
-    // Then sort if needed
+    // Sort the filtered contacts based on the selected sort direction
     if (state.sortDirection !== "none") {
-      filtered = [...filtered].sort((a, b) => {
-        const dateA = new Date(a.lastContactDate).getTime()
-        const dateB = new Date(b.lastContactDate).getTime()
+      filtered.sort((a, b) => {
+        const dateA = new Date(a.lastContact).getTime()
+        const dateB = new Date(b.lastContact).getTime()
         return state.sortDirection === "asc" ? dateA - dateB : dateB - dateA
       })
     }
 
     return filtered
-  })()
+  }, [state.contacts, state.searchQuery, state.sortDirection])
 
-  // Action creators
-  const addContact = (newContact: Omit<Contact, "id">) => {
-    dispatch({ type: "ADD_CONTACT", payload: newContact })
-  }
-
-  const updateContact = (id: string, updatedContact: Omit<Contact, "id">) => {
-    dispatch({ type: "UPDATE_CONTACT", payload: { id, contact: updatedContact } })
-  }
-
-  const deleteContact = (id: string) => {
-    const contactToDelete = state.contacts.find((contact) => contact.id === id)
-    if (!contactToDelete) return
-
-    dispatch({ type: "DELETE_CONTACT", payload: id })
-  }
-
-  const updateSearchQuery = (query: string) => {
+  // Function to update the search query in the state
+  const updateSearchQuery = (query: string) =>
     dispatch({ type: "SET_SEARCH_QUERY", payload: query })
-  }
 
-  const updateSortDirection = (direction: SortDirection) => {
+  // Function to update the sort direction in the state
+  const updateSortDirection = (direction: SortDirection) =>
     dispatch({ type: "SET_SORT_DIRECTION", payload: direction })
-  }
 
-  const selectContact = (contact: Contact | null) => {
+  // Function to select or deselect a contact
+  const selectContact = (contact: Contact | null) =>
     dispatch({ type: "SELECT_CONTACT", payload: contact })
-  }
 
-  const setModalMode = (mode: ModalMode) => {
+  // Function to set the current modal mode (add or edit)
+  const setModalMode = (mode: ModalMode) =>
     dispatch({ type: "SET_MODAL_MODE", payload: mode })
-  }
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
 
   return (
     <ContactsContext.Provider
       value={{
-        ...state,
-        filteredContacts,
-        dispatch,
-        addContact,
-        updateContact,
-        deleteContact,
-        updateSearchQuery,
-        updateSortDirection,
-        selectContact,
-        setModalMode,
-        validateEmail,
+        ...state, // Spread the current state values
+        enrichedList, // Include the filtered and sorted list of contacts
+        dispatch, // Provide the dispatch function for actions
+        updateSearchQuery, // Provide function to update the search query
+        updateSortDirection, // Provide function to update the sort direction
+        selectContact, // Provide function to select a contact
+        setModalMode, // Provide function to set the modal mode
       }}
     >
       {children}
@@ -233,9 +151,15 @@ export function ContactsProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ * Custom hook to access the contacts context.
+ * Throws an error if used outside of the ContactsProvider.
+ *
+ * @returns {ContactsContextType} The context value including the state and actions.
+ */
 export function useContacts() {
   const context = useContext(ContactsContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useContacts must be used within a ContactsProvider")
   }
   return context
