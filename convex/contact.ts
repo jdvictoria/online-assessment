@@ -20,6 +20,8 @@ export const updateContact = mutation({
   handler: async (ctx, args) => {
     const { contactId, updates } = args;
 
+    delete updates.image;
+
     await ctx.db.patch(contactId, updates);
     return { success: true };
   },

@@ -68,6 +68,8 @@ export function ContactsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (contacts) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       dispatch({ type: "SET_CONTACTS", payload: contacts })
     }
   }, [contacts])

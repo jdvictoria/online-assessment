@@ -38,17 +38,18 @@ import { Id } from "@/convex/_generated/dataModel";
 
 interface AddEditContactModalProps {
   isOpen: boolean
+  onParentCloseAction: () => void
   onCloseAction: () => void
 }
 
-export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactModalProps) {
+export function AddEditContactModal({ isOpen, onParentCloseAction, onCloseAction }: AddEditContactModalProps) {
   const { selectedContact, modalMode } = useContacts()
 
   return (
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
         <FormProvider>
-          <AddEditContactForm onClose={onCloseAction} isEditMode={modalMode === "edit"} selectedContact={selectedContact} />
+          <AddEditContactForm onClose={onCloseAction} onParentCloseAction={onParentCloseAction} isEditMode={modalMode === "edit"} selectedContact={selectedContact} />
         </FormProvider>
       </DialogContent>
     </Dialog>
@@ -57,10 +58,12 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
 
 function AddEditContactForm({
   onClose,
+  onParentCloseAction,
   isEditMode,
   selectedContact
 }: {
   onClose: () => void
+  onParentCloseAction: () => void
   isEditMode: boolean
   selectedContact: Contact | null
 }) {
@@ -149,6 +152,7 @@ function AddEditContactForm({
     }
 
     onClose()
+    onParentCloseAction()
   }
 
   return (
@@ -305,6 +309,7 @@ function AddEditContactForm({
               <Input
                 id="phone"
                 name="phone"
+                type="tel"
                 value={state.values.phone}
                 onChange={handleChange}
                 className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"

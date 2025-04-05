@@ -161,7 +161,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
         contactName={`${contact.firstName} ${contact.lastName}`}
       />
 
-      {isEditModalOpen && <AddEditContactModal isOpen={isEditModalOpen} onCloseAction={() => setIsEditModalOpen(false)} />}
+      {isEditModalOpen && <AddEditContactModal isOpen={isEditModalOpen} onParentCloseAction={onCloseAction} onCloseAction={() => setIsEditModalOpen(false)} />}
     </>
   )
 }
