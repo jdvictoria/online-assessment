@@ -8,9 +8,7 @@ import { makeSchemaValuesOptional } from "./utils";
 export const createContact = mutation({
   args: contactSchema,
   handler: async (ctx, args) => {
-    const contactId = await ctx.db.insert("contact", args);
-
-    return { success: true, data: contactId };
+    return await ctx.db.insert("contact", args);
   },
 });
 

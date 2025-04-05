@@ -66,7 +66,7 @@ const initialState: FormState = {
     birthday: "",
     lastContact: new Date().toISOString().split("T")[0],
     notes: "",
-    image: "/placeholder.svg?height=100&width=100",
+    image: "",
   },
   errors: {
     firstName: false,

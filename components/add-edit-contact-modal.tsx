@@ -32,6 +32,9 @@ import {
 
 import { Contact } from "@/types/contact";
 
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
 interface AddEditContactModalProps {
   isOpen: boolean
   onCloseAction: () => void
@@ -61,6 +64,9 @@ function AddEditContactForm({
   selectedContact: Contact | null
 }) {
   const { state, handleChange, handleImageChange, validateForm, resetForm, initializeForm, getFormValues } = useForm()
+
+  const createContact = useMutation(api.contact.createContact);
+  const updateContact = useMutation(api.contact.updateContact);
 
   const didInit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -110,7 +116,8 @@ function AddEditContactForm({
       // updateContact(selectedContact.id, payload)
       toast("Contact has been updated successfully")
     } else {
-      // addContact(payload)
+      const contactId = createContact(payload);
+      console.log(contactId);
       toast("Contact has been added successfully")
     }
 
@@ -141,7 +148,7 @@ function AddEditContactForm({
           <div className="flex justify-center">
             <div className="relative">
               <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
-                {state.values.image && state.values.image !== "/placeholder.svg?height=100&width=100" ? (
+                {state.values.image ? (
                   <Image
                     src={state.values.image || "/placeholder.svg"}
                     alt="Profile preview"

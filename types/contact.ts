@@ -11,6 +11,6 @@ export interface Contact {
   occupation?: string
   birthday?: string
   notes?: string
-  image?: string | null;
+  image?: string | undefined;
 }
 
