@@ -91,8 +91,6 @@ export function ContactsProvider({ children }: { children: ReactNode }) {
     return filtered
   }, [state.contacts, state.searchQuery, state.sortDirection])
 
-  //
-
   const updateSearchQuery = (query: string) =>
     dispatch({ type: "SET_SEARCH_QUERY", payload: query })
 

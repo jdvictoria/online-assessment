@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { format, parseISO } from "date-fns"
+import { format, parseISO, isValid } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -12,8 +12,6 @@ import {
 } from "@/components/ui/popover"
 
 import { cn } from "@/lib/utils"
-
-import { CalendarIcon } from "lucide-react"
 
 type CalendarInputProps = {
   id?: string
@@ -28,29 +26,21 @@ export function CalendarInput({
   value,
   onChange,
 }: CalendarInputProps) {
-  const parsedDate = value ? parseISO(value) : undefined
-  const [date, setDate] = React.useState<Date | undefined>(parsedDate)
+  const date = value ? parseISO(value) : undefined
 
-  React.useEffect(() => {
-    if (value && !date) {
-      setDate(parseISO(value))
-    }
-  }, [value])
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!onChange || !date || !isValid(date)) return
 
-  const handleSelect = (selectedDate?: Date) => {
-    setDate(selectedDate)
+    const localDateString = date.toLocaleDateString("en-CA")
 
-    if (onChange && selectedDate) {
-      const isoDate = selectedDate.toISOString().split("T")[0] // YYYY-MM-DD
-      const syntheticEvent = {
-        target: {
-          name,
-          value: isoDate,
-        },
-      } as React.ChangeEvent<HTMLInputElement>
+    const event = {
+      target: {
+        name: name || "",
+        value: localDateString,
+      },
+    } as React.ChangeEvent<HTMLInputElement>
 
-      onChange(syntheticEvent)
-    }
+    onChange(event)
   }
 
   return (
@@ -61,10 +51,10 @@ export function CalendarInput({
             variant={"outline"}
             className={cn(
               "justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              !value && "text-muted-foreground"
             )}
           >
-            {date ? format(date, "PPP") : <span>Pick a date</span>}
+            {value ? format(parseISO(value), "PPP") : "Select date"}
           </Button>
         </PopoverTrigger>
 
@@ -72,13 +62,13 @@ export function CalendarInput({
           <Calendar
             mode="single"
             selected={date}
-            onSelect={handleSelect}
+            onSelect={handleDateSelect}
             initialFocus
           />
         </PopoverContent>
       </Popover>
 
-      {/* Hidden input to maintain controlled behavior */}
+      {/* Hidden input to keep form controlled */}
       <input
         type="hidden"
         id={id}

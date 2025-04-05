@@ -2,9 +2,10 @@
 
 import type React from "react"
 import Image from "next/image"
-import { useState, useRef, useEffect } from "react"
+import { useRef, useEffect } from "react"
 
 import { useContacts } from "@/contexts/contacts-context"
+import {FormProvider, useForm} from "@/contexts/form-context";
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,6 +29,8 @@ import {
   X
 } from "lucide-react"
 
+import { Contact } from "@/types/contact";
+
 interface AddEditContactModalProps {
   isOpen: boolean
   onCloseAction: () => void
@@ -36,86 +39,55 @@ interface AddEditContactModalProps {
 export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactModalProps) {
   const { selectedContact, modalMode } = useContacts()
 
-  const isEditMode = modalMode === "edit"
+  return (
+    <Dialog open={isOpen} onOpenChange={onCloseAction}>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
+        <FormProvider>
+          <AddEditContactForm onClose={onCloseAction} isEditMode={modalMode === "edit"} selectedContact={selectedContact} />
+        </FormProvider>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    role: "",
-    birthday: "",
-    notes: "",
-    image: "/placeholder.svg?height=100&width=100",
-    lastContact: new Date().toISOString().split("T")[0],
-  })
+function AddEditContactForm({
+  onClose,
+  isEditMode,
+  selectedContact
+}: {
+  onClose: () => void
+  isEditMode: boolean
+  selectedContact: Contact | null
+}) {
+  const { state, handleChange, handleImageChange, validateForm, resetForm, initializeForm, getFormValues } = useForm()
 
-  const [errors, setErrors] = useState({
-    firstName: false,
-    lastName: false,
-    email: false,
-  })
-
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const didInit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Populate form data when editing an existing contact
+  // Initialize form when editing an existing contact
   useEffect(() => {
-    if (isEditMode && selectedContact) {
-      setFormData({
-        firstName: selectedContact.firstName,
-        lastName: selectedContact.lastName,
-        email: selectedContact.email,
-        phone: selectedContact.phone || "",
-        company: selectedContact.company || "",
-        role: selectedContact.occupation || "",
-        birthday: selectedContact.birthday || "",
-        notes: selectedContact.notes || "",
-        image: selectedContact.image || "",
-        lastContact: selectedContact.lastContact,
-      })
-      setImagePreview(selectedContact.image || "")
-    } else {
-      // Reset form for adding a new contact
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        company: "",
-        role: "",
-        birthday: "",
-        notes: "",
-        image: "/placeholder.svg?height=100&width=100",
-        lastContact: new Date().toISOString().split("T")[0],
-      })
-      setImagePreview("")
+    if (!didInit.current) {
+      if (isEditMode && selectedContact) {
+        initializeForm(selectedContact)
+      } else {
+        resetForm()
+      }
+      didInit.current = true
     }
-  }, [isEditMode, selectedContact, isOpen])
+  }, [isEditMode, selectedContact, initializeForm, resetForm])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-
-    // Clear error when user types
-    if (name in errors) {
-      setErrors((prev) => ({ ...prev, [name]: false }))
-    }
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
+        // Toast is handled in the form context
         return
       }
 
       const reader = new FileReader()
       reader.onloadend = () => {
         const result = reader.result as string
-        setImagePreview(result)
-        setFormData((prev) => ({ ...prev, image: result }))
+        handleImageChange(result)
       }
       reader.readAsDataURL(file)
     }
@@ -125,33 +97,6 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
     fileInputRef.current?.click()
   }
 
-  const validateForm = () => {
-    const validateEmail = (email: string) =>
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-
-    const newErrors = {
-      firstName: !formData.firstName.trim(),
-      lastName: !formData.lastName.trim(),
-      email: !validateEmail(formData.email),
-    }
-
-    setErrors(newErrors)
-
-    if (newErrors.firstName) {
-      return false
-    }
-
-    if (newErrors.lastName) {
-      return false
-    }
-
-    if (newErrors.email) {
-      return false
-    }
-
-    return true
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -159,225 +104,217 @@ export function AddEditContactModal({ isOpen, onCloseAction }: AddEditContactMod
       return
     }
 
+    const formValues = getFormValues()
+
+    console.log(formValues)
     if (isEditMode && selectedContact) {
-      // updateContact(selectedContact.id, formData)
+      // updateContact(selectedContact.id, formValues)
     } else {
-      // addContact(formData)
+      // addContact(formValues)
     }
 
-    onCloseAction()
+    onClose()
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onCloseAction}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-2xl text-[#1E7FDF]">
-            {isEditMode ? "Edit Contact" : "Add New Contact"}
-          </DialogTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 text-black-500"
-              onClick={onCloseAction}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </Button>
+    <>
+      <DialogHeader className="flex flex-row items-center justify-between">
+        <DialogTitle className="text-2xl text-[#1E7FDF]">
+          {isEditMode ? "Edit Contact" : "Add New Contact"}
+        </DialogTitle>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 text-black-500"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </div>
+      </DialogHeader>
+
+      <form onSubmit={handleSubmit}>
+        <div className="grid gap-6 py-4">
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
+                {state.values.image && state.values.image !== "/placeholder.svg?height=100&width=100" ? (
+                  <Image
+                    src={state.values.image || "/placeholder.svg"}
+                    alt="Profile preview"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-slate-400">
+                    <Camera size={40} />
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                className="absolute bottom-0 right-0 bg-[#1E7FDF] text-white p-1.5 rounded-full shadow-md hover:bg-[#1E7FDF]/90 transition-colors"
+              >
+                <Upload size={15} />
+              </button>
+              <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+            </div>
           </div>
-        </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6 py-4">
-            <div className="flex justify-center">
-              <div className="relative">
-                <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
-                  {imagePreview ? (
-                    <Image
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Profile preview"
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-slate-400">
-                      <Camera size={40} />
-                    </div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={triggerFileInput}
-                  className="absolute bottom-0 right-0 bg-[#1E7FDF] text-white p-1.5 rounded-full shadow-md hover:bg-[#1E7FDF]/90 transition-colors"
-                >
-                  <Upload size={20} />
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </div>
-            </div>
-
-            {/* First Name and Last Name */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="firstName" className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#1E7FDF]" />
-                  First Name *
-                </Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  className={`border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50 ${
-                    errors.firstName ? "border-red-500" : ""
-                  }`}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="lastName" className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#1E7FDF]" />
-                  Last Name *
-                </Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                  className={`border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50 ${
-                    errors.lastName ? "border-red-500" : ""
-                  }`}
-                />
-              </div>
-            </div>
-
-            {/* Email and Phone */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-[#1E7FDF]" />
-                  Email *
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className={`border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50 ${
-                    errors.email ? "border-red-500" : ""
-                  }`}
-                />
-                {errors.email && <p className="text-xs text-red-500">Please enter a valid email address</p>}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-[#1E7FDF]" />
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
-                />
-              </div>
-            </div>
-
-            {/* Role and Company */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="role" className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-[#1E7FDF]" />
-                  Role
-                </Label>
-                <Input
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="company" className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-[#1E7FDF]" />
-                  Company
-                </Label>
-                <Input
-                  id="company"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
-                />
-              </div>
-            </div>
-
-            {/* Birthday and Last Contact Date */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="birthday" className="flex items-center gap-2">
-                  <Cake className="h-4 w-4 text-[#1E7FDF]" />
-                  Birthday
-                </Label>
-                <CalendarInput
-                  id="lastContact"
-                  name="lastContact"
-                  value={formData.birthday}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="lastContact" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-[#1E7FDF]" />
-                  Last Contact Date
-                </Label>
-                <CalendarInput
-                  id="lastContact"
-                  name="lastContact"
-                  value={formData.lastContact}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {/* Notes */}
+          {/* First Name and Last Name */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="notes" className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#1E7FDF]" />
-                Notes
+              <Label htmlFor="firstName" className="flex items-center gap-2">
+                <User className="h-4 w-4 text-[#1E7FDF]" />
+                First Name
               </Label>
-              <Textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
+              <Input
+                id="firstName"
+                name="firstName"
+                value={state.values.firstName}
                 onChange={handleChange}
-                rows={3}
+                className={`border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50 ${
+                  state.errors.firstName ? "border-red-500" : ""
+                }`}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="lastName" className="flex items-center gap-2">
+                <User className="h-4 w-4 text-[#1E7FDF]" />
+                Last Name
+              </Label>
+              <Input
+                id="lastName"
+                name="lastName"
+                value={state.values.lastName}
+                onChange={handleChange}
+                className={`border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50 ${
+                  state.errors.lastName ? "border-red-500" : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Email and Phone */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-[#1E7FDF]" />
+                Email
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={state.values.email}
+                onChange={handleChange}
+                className={`border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50 ${
+                  state.errors.email ? "border-red-500" : ""
+                }`}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="lastContact" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[#1E7FDF]" />
+                Last Contact Date
+              </Label>
+              <CalendarInput
+                id="lastContact"
+                name="lastContact"
+                value={state.values.lastContact}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Role and Company */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="role" className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-[#1E7FDF]" />
+                Role
+              </Label>
+              <Input
+                id="role"
+                name="role"
+                value={state.values.occupation}
+                onChange={handleChange}
+                className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="company" className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-[#1E7FDF]" />
+                Company
+              </Label>
+              <Input
+                id="company"
+                name="company"
+                value={state.values.company}
+                onChange={handleChange}
                 className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCloseAction}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-[#1E7FDF] hover:bg-[#1E7FDF]/90">
-              {isEditMode ? "Save Changes" : "Add Contact"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+
+          {/* Birthday and Last Contact Date with Calendar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="phone" className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-[#1E7FDF]" />
+                Phone
+              </Label>
+              <Input
+                id="phone"
+                name="phone"
+                value={state.values.phone}
+                onChange={handleChange}
+                className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="birthday" className="flex items-center gap-2">
+                <Cake className="h-4 w-4 text-[#1E7FDF]" />
+                Birthday
+              </Label>
+              <CalendarInput
+                id="lastContact"
+                name="lastContact"
+                value={state.values.birthday}
+                onChange={handleChange}
+              />
+            </div>
+
+          </div>
+
+          {/* Notes */}
+          <div className="grid gap-2">
+            <Label htmlFor="notes" className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[#1E7FDF]" />
+              Notes
+            </Label>
+            <Textarea
+              id="notes"
+              name="notes"
+              value={state.values.notes}
+              onChange={handleChange}
+              rows={3}
+              className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-[#1E7FDF] hover:bg-[#1E7FDF]/90">
+            {isEditMode ? "Save Changes" : "Add Contact"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
   )
 }
