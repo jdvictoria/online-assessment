@@ -395,7 +395,7 @@ function AddEditContactForm({
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" className="bg-[#1E7FDF] hover:bg-[#1E7FDF]/90">
+          <Button type="submit" disabled={!state.isDirty} className="bg-[#1E7FDF] hover:bg-[#1E7FDF]/90">
             {isEditMode ? "Save Changes" : "Add Contact"}
           </Button>
         </DialogFooter>
