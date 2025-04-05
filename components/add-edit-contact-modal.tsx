@@ -162,37 +162,41 @@ function AddEditContactForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {  // Validate the form before submitting
-      return
-    }
-
-    const formValues = getFormValues()
-    const { _id, ...payload } = formValues
-
-    if (isEditMode && selectedContact) {
-      // Update the existing contact
-      await updateContact({
-        contactId: _id,
-        updates: payload
-      })
-
-      if (state.values.imageFile) {
-        await handleSendImage(_id);  // Upload the image if present
+    try {
+      if (!validateForm()) {  // Validate the form before submitting
+        return
       }
-      toast("Contact has been updated successfully")
-    } else {
-      // Create a new contact
-      const contactId = await createContact(payload);
 
-      if (state.values.imageFile) {
-        await handleSendImage(contactId);  // Upload the image if present
+      const formValues = getFormValues()
+      const { _id, ...payload } = formValues
+
+      if (isEditMode && selectedContact) {
+        // Update the existing contact
+        await updateContact({
+          contactId: _id,
+          updates: payload
+        })
+
+        if (state.values.imageFile) {
+          await handleSendImage(_id);  // Upload the image if present
+        }
+        toast("Contact has been updated successfully")
+      } else {
+        // Create a new contact
+        const contactId = await createContact(payload);
+
+        if (state.values.imageFile) {
+          await handleSendImage(contactId);  // Upload the image if present
+        }
+        toast("Contact has been added successfully")
       }
-      toast("Contact has been added successfully")
-    }
 
-    onClose()
-    if (onParentCloseAction) {
-      onParentCloseAction()  // Call optional parent close action
+      onClose()
+      if (onParentCloseAction) {
+        onParentCloseAction()  // Call optional parent close action
+      }
+    } catch (error) {
+      toast.error(`An error occurred: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
   }
 
