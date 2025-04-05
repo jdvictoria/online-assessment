@@ -29,10 +29,11 @@ export function DeleteContactDialog({ isOpen, onCloseAction, contactId, contactN
   const handleDelete = async () => {
     try {
       onCloseAction()
-      toast("Contact has been deleted")
+      toast("Contact has been deleted successfully")
       await deleteContact({ contactId: contactId as Id<"contact"> })
     } catch (error) {
       console.error("Error deleting contact:", error)
+      toast("Contact has been deleted failure")
     }
   }
 

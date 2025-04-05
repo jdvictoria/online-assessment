@@ -105,7 +105,7 @@ export function ContactsList() {
         <EmptyContacts onAddClickAction={handleAddClick} />
       )}
 
-      <AddEditContactModal isOpen={isAddModalOpen} onCloseAction={() => setIsAddModalOpen(false)} />
+      <AddEditContactModal isOpen={isAddModalOpen} onParentCloseAction={undefined} onCloseAction={() => setIsAddModalOpen(false)} />
 
       {selectedContact && <ContactDetailModal isOpen={!!selectedContact} onCloseAction={() => selectContact(null)} />}
     </div>

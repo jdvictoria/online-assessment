@@ -38,7 +38,7 @@ import { Id } from "@/convex/_generated/dataModel";
 
 interface AddEditContactModalProps {
   isOpen: boolean
-  onParentCloseAction: () => void
+  onParentCloseAction?: () => void
   onCloseAction: () => void
 }
 
@@ -63,7 +63,7 @@ function AddEditContactForm({
   selectedContact
 }: {
   onClose: () => void
-  onParentCloseAction: () => void
+  onParentCloseAction?: () => void
   isEditMode: boolean
   selectedContact: Contact | null
 }) {
@@ -152,7 +152,9 @@ function AddEditContactForm({
     }
 
     onClose()
-    onParentCloseAction()
+    if (onParentCloseAction) {
+      onParentCloseAction()
+    }
   }
 
   return (

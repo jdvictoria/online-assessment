@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DeleteContactDialog } from "@/components/delete-contact-dialog"
 import { AddEditContactModal } from "@/components/add-edit-contact-modal"
 
-import {Mail, Phone, Calendar, Edit, Trash2, Briefcase, Cake, X, UserRound} from "lucide-react"
+import { Mail, Phone, Calendar, Edit, Trash2, Briefcase, Cake, X, UserRound } from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
 
