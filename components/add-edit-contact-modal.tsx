@@ -5,8 +5,9 @@ import Image from "next/image"
 import { useRef, useEffect } from "react"
 
 import { useContacts } from "@/contexts/contacts-context"
-import {FormProvider, useForm} from "@/contexts/form-context";
+import { FormProvider, useForm } from "@/contexts/form-context";
 
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -80,7 +81,7 @@ function AddEditContactForm({
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        // Toast is handled in the form context
+        toast("Image uploaded successfully")
         return
       }
 
@@ -93,10 +94,6 @@ function AddEditContactForm({
     }
   }
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click()
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -106,11 +103,15 @@ function AddEditContactForm({
 
     const formValues = getFormValues()
 
-    console.log(formValues)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, ...payload } = formValues
+
     if (isEditMode && selectedContact) {
-      // updateContact(selectedContact.id, formValues)
+      // updateContact(selectedContact.id, payload)
+      toast("Contact has been updated successfully")
     } else {
-      // addContact(formValues)
+      // addContact(payload)
+      toast("Contact has been added successfully")
     }
 
     onClose()
@@ -155,7 +156,7 @@ function AddEditContactForm({
               </div>
               <button
                 type="button"
-                onClick={triggerFileInput}
+                onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-0 right-0 bg-[#1E7FDF] text-white p-1.5 rounded-full shadow-md hover:bg-[#1E7FDF]/90 transition-colors"
               >
                 <Upload size={15} />
