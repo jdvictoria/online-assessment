@@ -34,6 +34,7 @@ import { Contact } from "@/types/contact";
 
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface AddEditContactModalProps {
   isOpen: boolean
@@ -63,10 +64,13 @@ function AddEditContactForm({
   isEditMode: boolean
   selectedContact: Contact | null
 }) {
-  const { state, handleChange, handleImageChange, validateForm, resetForm, initializeForm, getFormValues } = useForm()
+  const { state, dispatch, handleChange, handleImageChange, validateForm, resetForm, initializeForm, getFormValues } = useForm()
 
   const createContact = useMutation(api.contact.createContact);
   const updateContact = useMutation(api.contact.updateContact);
+
+  const createUrl = useMutation(api.media.createUrl);
+  const uploadPhoto = useMutation(api.media.uploadPhoto);
 
   const didInit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -85,22 +89,36 @@ function AddEditContactForm({
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast("Image uploaded successfully")
-        return
-      }
+    if (!file) return;
 
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const result = reader.result as string
-        handleImageChange(result)
-      }
-      reader.readAsDataURL(file)
+    if (file.size > 5 * 1024 * 1024) {
+      toast("Image size exceeds 5MB")
+      return;
     }
+
+    const previewUrl = URL.createObjectURL(file)
+    handleImageChange(previewUrl)
+    dispatch({ type: "SET_IMAGE_FILE", value: file })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  async function handleSendImage(contactId: Id<"contact">) {
+    if (!state.values.imageFile) return;
+
+    const { uploadUrl } = await createUrl();
+
+    const result = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": state.values.imageFile.type,
+      },
+      body: state.values.imageFile,
+    });
+
+    const { storageId } = await result.json();
+    await uploadPhoto({ storageId, contactId });
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateForm()) {
@@ -109,15 +127,24 @@ function AddEditContactForm({
 
     const formValues = getFormValues()
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, ...payload } = formValues
 
     if (isEditMode && selectedContact) {
-      // updateContact(selectedContact.id, payload)
+      await updateContact({
+        contactId: _id,
+        updates: payload
+      })
+
+      if (state.values.imageFile) {
+        await handleSendImage(_id);
+      }
       toast("Contact has been updated successfully")
     } else {
-      const contactId = createContact(payload);
-      console.log(contactId);
+      const contactId = await createContact(payload);
+
+      if (state.values.imageFile) {
+        await handleSendImage(contactId);
+      }
       toast("Contact has been added successfully")
     }
 

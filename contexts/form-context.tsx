@@ -12,6 +12,7 @@ import { Id } from "@/convex/_generated/dataModel";
 type FormActionType =
   | { type: "SET_FIELD"; field: string; value: string }
   | { type: "SET_IMAGE"; value: string }
+  | { type: "SET_IMAGE_FILE"; value: File }
   | { type: "VALIDATE_FORM" }
   | { type: "RESET_FORM" }
   | { type: "INITIALIZE_FORM"; contact: Partial<Contact> }
@@ -31,6 +32,7 @@ interface FormState {
     lastContact: string
     notes: string
     image: string
+    imageFile: File | null
   }
   errors: {
     firstName: boolean
@@ -67,6 +69,7 @@ const initialState: FormState = {
     lastContact: new Date().toISOString().split("T")[0],
     notes: "",
     image: "",
+    imageFile: null,
   },
   errors: {
     firstName: false,
@@ -111,6 +114,15 @@ function formReducer(state: FormState, action: FormActionType): FormState {
         },
         isDirty: true,
       }
+    case "SET_IMAGE_FILE":
+      return {
+        ...state,
+        values: {
+          ...state.values,
+          imageFile: action.value,
+        },
+        isDirty: true,
+      }
     case "VALIDATE_FORM":
       const errors = {
         firstName: !state.values.firstName.trim(),
@@ -146,6 +158,7 @@ function formReducer(state: FormState, action: FormActionType): FormState {
           lastContact: action.contact.lastContact || new Date().toISOString().split("T")[0],
           notes: action.contact.notes || "",
           image: action.contact.image || "",
+          imageFile: null,
         },
         isDirty: false,
         isValid: false,

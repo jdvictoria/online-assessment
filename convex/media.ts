@@ -12,7 +12,7 @@ export const uploadPhoto = mutation({
   },
   handler: async (ctx, { storageId, contactId }) => {
     try {
-      await ctx.db.patch(contactId, { image: storageId.toString() });
+      await ctx.db.patch(contactId, { image: storageId });
       return { success: true };
     } catch (error) {
       return { success: false, message: `${error}` };
