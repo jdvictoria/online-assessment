@@ -20,16 +20,34 @@ interface ContactDetailModalProps {
   onCloseAction: () => void
 }
 
+/**
+ * ContactDetailModal component.
+ * This component displays the details of a selected contact in a dialog modal.
+ * It provides functionality for editing, deleting, and viewing the contact's information like email, phone number, and birthday.
+ *
+ * @param {boolean} isOpen - Whether the modal is open or closed.
+ * @param {function} onCloseAction - Function to close the modal.
+ *
+ * @returns {JSX.Element} The rendered contact detail modal.
+ */
 export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModalProps) {
+  // Destructuring selected contact and modal control functions from contacts context
   const { selectedContact: contact, setModalMode } = useContacts()
+
+  // Local state to manage delete confirmation dialog and edit modal visibility
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
+  // If no contact is selected, return null to avoid rendering modal
   if (!contact) return null
 
+  /**
+   * Handle opening the edit modal when the "Edit" button is clicked.
+   * Sets modal mode to "edit" and opens the edit modal.
+   */
   const handleEditClick = () => {
-    setModalMode("edit")
-    setIsEditModalOpen(true)
+    setModalMode("edit") // Set the modal mode to "edit"
+    setIsEditModalOpen(true) // Open the "Edit Contact" modal
   }
 
   return (
@@ -39,10 +57,12 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-2xl">Contact Details</DialogTitle>
             <div className="flex gap-2">
+              {/* Edit button */}
               <Button variant="outline" size="icon" className="h-8 w-8 text-[#1E7FDF]" onClick={handleEditClick}>
                 <Edit className="h-4 w-4" />
                 <span className="sr-only">Edit</span>
               </Button>
+              {/* Delete button */}
               <Button
                 variant="outline"
                 size="icon"
@@ -52,6 +72,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Delete</span>
               </Button>
+              {/* Close button */}
               <Button
                 variant="outline"
                 size="icon"
@@ -65,9 +86,11 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
           </DialogHeader>
 
           <div className="mt-4 space-y-6">
+            {/* Contact profile details */}
             <div className="flex flex-col items-center text-center gap-4">
               <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-[#1E7FDF]/20 bg-slate-100">
                 {contact.image ? (
+                  // Display contact image if available
                   <Image
                     src={contact.image || "/placeholder.svg"}
                     alt={`${contact.firstName} ${contact.lastName}`}
@@ -75,12 +98,14 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                     className="object-cover"
                   />
                 ) : (
+                  // Display a default avatar if no image is provided
                   <div className="h-full w-full flex items-center justify-center text-slate-400">
                     <UserRound size={40} />
                   </div>
                 )}
               </div>
 
+              {/* Contact name and optional occupation/company */}
               <div>
                 <h2 className="text-2xl font-bold">
                   {contact.firstName} {contact.lastName}
@@ -90,7 +115,9 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
               </div>
             </div>
 
+            {/* Contact details (email, phone, occupation, etc.) */}
             <div className="grid gap-4 p-4 bg-[#1E7FDF]/5 rounded-lg">
+              {/* Email */}
               <div className="flex items-center gap-3">
                 <div className="bg-[#1E7FDF] p-2 rounded-full">
                   <Mail className="h-4 w-4 text-white" />
@@ -100,6 +127,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 </a>
               </div>
 
+              {/* Phone */}
               {contact.phone && (
                 <div className="flex items-center gap-3">
                   <div className="bg-[#1E7FDF] p-2 rounded-full">
@@ -111,6 +139,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 </div>
               )}
 
+              {/* Occupation and Company */}
               {(contact.occupation || contact.company) && (
                 <div className="flex items-center gap-3">
                   <div className="bg-[#1E7FDF] p-2 rounded-full">
@@ -124,6 +153,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 </div>
               )}
 
+              {/* Birthday */}
               {contact.birthday && (
                 <div className="flex items-center gap-3">
                   <div className="bg-[#1E7FDF] p-2 rounded-full">
@@ -133,6 +163,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
                 </div>
               )}
 
+              {/* Last contact date */}
               <div className="flex items-center gap-3">
                 <div className="bg-[#1E7FDF] p-2 rounded-full">
                   <Calendar className="h-4 w-4 text-white" />
@@ -141,6 +172,7 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
               </div>
             </div>
 
+            {/* Notes section */}
             {contact.notes && (
               <div className="mt-4">
                 <h3 className="font-medium mb-2 text-lg">Notes</h3>
@@ -151,16 +183,18 @@ export function ContactDetailModal({ isOpen, onCloseAction }: ContactDetailModal
         </DialogContent>
       </Dialog>
 
+      {/* Delete contact confirmation dialog */}
       <DeleteContactDialog
         isOpen={isDeleteDialogOpen}
         onCloseAction={() => {
           onCloseAction();
-          setIsDeleteDialogOpen(false)
+          setIsDeleteDialogOpen(false) // Close the delete dialog after deletion
         }}
         contactId={contact._id}
         contactName={`${contact.firstName} ${contact.lastName}`}
       />
 
+      {/* Edit contact modal */}
       {isEditModalOpen && <AddEditContactModal isOpen={isEditModalOpen} onParentCloseAction={onCloseAction} onCloseAction={() => setIsEditModalOpen(false)} />}
     </>
   )

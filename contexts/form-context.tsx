@@ -8,20 +8,20 @@ import { toast } from "sonner"
 import type { Contact } from "@/types/contact"
 import { Id } from "@/convex/_generated/dataModel";
 
-// Action types
+// Action types: Defines all possible actions that can be dispatched to the reducer.
 type FormActionType =
-  | { type: "SET_FIELD"; field: string; value: string }
-  | { type: "SET_IMAGE"; value: string }
-  | { type: "SET_IMAGE_FILE"; value: File }
-  | { type: "VALIDATE_FORM" }
-  | { type: "RESET_FORM" }
-  | { type: "INITIALIZE_FORM"; contact: Partial<Contact> }
-  | { type: "SET_ERRORS"; errors: Partial<Record<keyof FormState["errors"], boolean>> }
+  | { type: "SET_FIELD"; field: string; value: string } // Set a specific field's value
+  | { type: "SET_IMAGE"; value: string } // Set the image URL
+  | { type: "SET_IMAGE_FILE"; value: File } // Set the image file
+  | { type: "VALIDATE_FORM" } // Validate the form
+  | { type: "RESET_FORM" } // Reset the form to its initial state
+  | { type: "INITIALIZE_FORM"; contact: Partial<Contact> } // Initialize the form with contact data
+  | { type: "SET_ERRORS"; errors: Partial<Record<keyof FormState["errors"], boolean>> } // Set form errors
 
-// Form state interface
+// Form state interface: Defines the structure of the form state.
 interface FormState {
   values: {
-    _id: Id<"contact">
+    _id: Id<"contact"> // Unique identifier for the contact
     firstName: string
     lastName: string
     email: string
@@ -32,30 +32,30 @@ interface FormState {
     lastContact: string
     notes: string
     image: string
-    imageFile: File | null
+    imageFile: File | null // Image file for the contact
   }
   errors: {
-    firstName: boolean
-    lastName: boolean
-    email: boolean
+    firstName: boolean // Error flag for the first name field
+    lastName: boolean // Error flag for the last name field
+    email: boolean // Error flag for the email field
   }
-  isDirty: boolean
-  isValid: boolean
+  isDirty: boolean // Flag to check if the form has been modified
+  isValid: boolean // Flag indicating whether the form is valid
 }
 
-// Form context interface
+// Form context interface: Defines the context API for the form, including state and actions.
 interface FormContextType {
   state: FormState
-  dispatch: React.Dispatch<FormActionType>
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  handleImageChange: (imageUrl: string) => void
-  validateForm: () => boolean
-  resetForm: () => void
-  initializeForm: (contact: Partial<Contact>) => void
-  getFormValues: () => Omit<Contact, "id">
+  dispatch: React.Dispatch<FormActionType> // Dispatch function to trigger state changes
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void // Handles input change
+  handleImageChange: (imageUrl: string) => void // Handles image URL change
+  validateForm: () => boolean // Validates the form and returns whether it is valid
+  resetForm: () => void // Resets the form to its initial state
+  initializeForm: (contact: Partial<Contact>) => void // Initializes the form with contact data
+  getFormValues: () => Omit<Contact, "id"> // Retrieves the current form values (excluding the contact ID)
 }
 
-// Initial state
+// Initial state: Default state of the form.
 const initialState: FormState = {
   values: {
     _id: "" as Id<"contact">,
@@ -66,7 +66,7 @@ const initialState: FormState = {
     company: "",
     occupation: "",
     birthday: "",
-    lastContact: new Date().toISOString().split("T")[0],
+    lastContact: new Date().toISOString().split("T")[0], // Set today's date as default for last contact
     notes: "",
     image: "",
     imageFile: null,
@@ -80,19 +80,20 @@ const initialState: FormState = {
   isValid: false,
 }
 
-// Create context
+// Create context: Initializes the form context for sharing state and actions.
 const FormContext = createContext<FormContextType | undefined>(undefined)
 
-// Email validation function
+// Email validation function: Validates the email format.
 const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
 
-// Reducer function
+// Reducer function: Handles different form actions and updates the form state accordingly.
 function formReducer(state: FormState, action: FormActionType): FormState {
   switch (action.type) {
     case "SET_FIELD":
+      // Updates a specific field value and marks the form as dirty
       return {
         ...state,
         values: {
@@ -106,6 +107,7 @@ function formReducer(state: FormState, action: FormActionType): FormState {
         isDirty: true,
       }
     case "SET_IMAGE":
+      // Sets the image URL and marks the form as dirty
       return {
         ...state,
         values: {
@@ -115,6 +117,7 @@ function formReducer(state: FormState, action: FormActionType): FormState {
         isDirty: true,
       }
     case "SET_IMAGE_FILE":
+      // Sets the image file and marks the form as dirty
       return {
         ...state,
         values: {
@@ -124,6 +127,7 @@ function formReducer(state: FormState, action: FormActionType): FormState {
         isDirty: true,
       }
     case "VALIDATE_FORM":
+      // Validates the form fields and returns the validation state
       const errors = {
         firstName: !state.values.firstName.trim(),
         lastName: !state.values.lastName.trim(),
@@ -133,17 +137,19 @@ function formReducer(state: FormState, action: FormActionType): FormState {
       return {
         ...state,
         errors,
-        isValid: !Object.values(errors).some(Boolean),
+        isValid: !Object.values(errors).some(Boolean), // Checks if any field has an error
       }
     case "RESET_FORM":
+      // Resets the form to its initial state
       return {
         ...initialState,
         values: {
           ...initialState.values,
-          lastContact: new Date().toISOString().split("T")[0],
+          lastContact: new Date().toISOString().split("T")[0], // Reset last contact to today's date
         },
       }
     case "INITIALIZE_FORM":
+      // Initializes the form with provided contact data
       return {
         ...state,
         values: {
@@ -164,6 +170,7 @@ function formReducer(state: FormState, action: FormActionType): FormState {
         isValid: false,
       }
     case "SET_ERRORS":
+      // Sets specific errors for the form fields
       return {
         ...state,
         errors: {
@@ -176,11 +183,11 @@ function formReducer(state: FormState, action: FormActionType): FormState {
   }
 }
 
-// Provider component
+// Provider component: Provides the form context to the children components.
 export function FormProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(formReducer, initialState)
 
-  // Memoized handlers to prevent unnecessary re-renders
+  // Memoized handlers to prevent unnecessary re-renders and improve performance
   const handlers = useMemo(
     () => ({
       handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -197,7 +204,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
           firstName: !state.values.firstName.trim(),
           lastName: !state.values.lastName.trim(),
           email: !validateEmail(state.values.email),
-          lastContact: !state.values.lastContact.trim(),
         }
 
         dispatch({ type: "SET_ERRORS", errors })
@@ -206,7 +212,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
         if (errors.firstName) missingFields.push("First Name")
         if (errors.lastName) missingFields.push("Last Name")
         if (errors.email) missingFields.push("Email")
-        if (errors.lastContact) missingFields.push("Last Contact")
 
         if (missingFields.length > 0) {
           toast(`${missingFields.join(", ")} ${missingFields.length > 1 ? "are" : "is"} required`)
@@ -245,7 +250,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
     [state.errors, toast],
   )
 
-  // Provide context value
+  // Provide context value to children components
   const contextValue = useMemo(
     () => ({
       state,
@@ -258,6 +263,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
   return <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>
 }
 
+// Custom hook to access form context in child components
 export function useForm() {
   const context = useContext(FormContext)
   if (context === undefined) {

@@ -37,11 +37,19 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 interface AddEditContactModalProps {
-  isOpen: boolean
-  onParentCloseAction?: () => void
-  onCloseAction: () => void
+  isOpen: boolean;  // Controls whether the modal is open or closed
+  onParentCloseAction?: () => void;  // Optional action to be called after closing modal
+  onCloseAction: () => void;  // Action to close the modal
 }
 
+/**
+ * The modal component that allows users to add or edit contacts.
+ * It displays a form with input fields for contact details like name, email, phone, etc.
+ *
+ * @param {AddEditContactModalProps} props - Contains modal state, close actions, and mode.
+ *
+ * @returns {JSX.Element} The rendered modal.
+ */
 export function AddEditContactModal({ isOpen, onParentCloseAction, onCloseAction }: AddEditContactModalProps) {
   const { selectedContact, modalMode } = useContacts()
 
@@ -49,24 +57,39 @@ export function AddEditContactModal({ isOpen, onParentCloseAction, onCloseAction
     <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto [&>button]:hidden">
         <FormProvider>
-          <AddEditContactForm onClose={onCloseAction} onParentCloseAction={onParentCloseAction} isEditMode={modalMode === "edit"} selectedContact={selectedContact} />
+          {/* Form for adding or editing a contact */}
+          <AddEditContactForm
+            onClose={onCloseAction}
+            onParentCloseAction={onParentCloseAction}
+            isEditMode={modalMode === "edit"}
+            selectedContact={selectedContact}
+          />
         </FormProvider>
       </DialogContent>
     </Dialog>
   )
 }
 
+interface AddEditContactFormProps {
+  onClose: () => void;  // Action to close the modal
+  onParentCloseAction?: () => void;  // Optional action for parent component after closing modal
+  isEditMode: boolean;  // Whether the form is in edit mode (editing an existing contact)
+  selectedContact: Contact | null;  // The selected contact to edit, if any
+}
+
+/**
+ * Form for adding or editing a contact's details. Handles form initialization, validation, and submission.
+ *
+ * @param {AddEditContactFormProps} props - The form props containing the contact details, edit mode, and actions.
+ *
+ * @returns {JSX.Element} The rendered form inside the modal.
+ */
 function AddEditContactForm({
-  onClose,
-  onParentCloseAction,
-  isEditMode,
-  selectedContact
-}: {
-  onClose: () => void
-  onParentCloseAction?: () => void
-  isEditMode: boolean
-  selectedContact: Contact | null
-}) {
+                              onClose,
+                              onParentCloseAction,
+                              isEditMode,
+                              selectedContact
+                            }: AddEditContactFormProps) {
   const { state, dispatch, handleChange, handleImageChange, validateForm, resetForm, initializeForm, getFormValues } = useForm()
 
   const createContact = useMutation(api.contact.createContact);
@@ -78,23 +101,29 @@ function AddEditContactForm({
   const didInit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Initialize form when editing an existing contact
+  // Initialize the form when editing an existing contact
   useEffect(() => {
     if (!didInit.current) {
       if (isEditMode && selectedContact) {
-        initializeForm(selectedContact)
+        initializeForm(selectedContact)  // Populate form fields with selected contact data
       } else {
-        resetForm()
+        resetForm()  // Reset form if creating a new contact
       }
       didInit.current = true
     }
   }, [isEditMode, selectedContact, initializeForm, resetForm])
 
+  /**
+   * Handles the image upload from the user.
+   * Ensures the image is under 5MB and sets the image preview URL.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The event triggered by selecting a file
+   */
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {  // Ensure file is less than 5MB
       toast("Image size exceeds 5MB")
       return;
     }
@@ -104,11 +133,15 @@ function AddEditContactForm({
     dispatch({ type: "SET_IMAGE_FILE", value: file })
   }
 
+  /**
+   * Uploads the selected image to the server if the contact is saved or updated.
+   *
+   * @param {Id<"contact">} contactId - The ID of the contact for which the image is being uploaded
+   */
   async function handleSendImage(contactId: Id<"contact">) {
     if (!state.values.imageFile) return;
 
-    const { uploadUrl } = await createUrl();
-
+    const { uploadUrl } = await createUrl();  // Get the URL to upload the image
     const result = await fetch(uploadUrl, {
       method: "POST",
       headers: {
@@ -118,42 +151,48 @@ function AddEditContactForm({
     });
 
     const { storageId } = await result.json();
-    await uploadPhoto({ storageId, contactId });
+    await uploadPhoto({ storageId, contactId });  // Upload photo to the server
   }
 
+  /**
+   * Handles the form submission, either adding a new contact or updating an existing contact.
+   *
+   * @param {React.FormEvent} e - The form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    if (!validateForm()) {  // Validate the form before submitting
       return
     }
 
     const formValues = getFormValues()
-
     const { _id, ...payload } = formValues
 
     if (isEditMode && selectedContact) {
+      // Update the existing contact
       await updateContact({
         contactId: _id,
         updates: payload
       })
 
       if (state.values.imageFile) {
-        await handleSendImage(_id);
+        await handleSendImage(_id);  // Upload the image if present
       }
       toast("Contact has been updated successfully")
     } else {
+      // Create a new contact
       const contactId = await createContact(payload);
 
       if (state.values.imageFile) {
-        await handleSendImage(contactId);
+        await handleSendImage(contactId);  // Upload the image if present
       }
       toast("Contact has been added successfully")
     }
 
     onClose()
     if (onParentCloseAction) {
-      onParentCloseAction()
+      onParentCloseAction()  // Call optional parent close action
     }
   }
 
