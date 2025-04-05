@@ -145,7 +145,7 @@ function formReducer(state: FormState, action: FormActionType): FormState {
           birthday: action.contact.birthday || "",
           lastContact: action.contact.lastContact || new Date().toISOString().split("T")[0],
           notes: action.contact.notes || "",
-          image: action.contact.image || "/placeholder.svg?height=100&width=100",
+          image: action.contact.image || "",
         },
         isDirty: false,
         isValid: false,
