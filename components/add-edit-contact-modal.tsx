@@ -268,13 +268,13 @@ function AddEditContactForm({
           {/* Role and Company */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="role" className="flex items-center gap-2">
+              <Label htmlFor="occupation" className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-[#1E7FDF]" />
                 Role
               </Label>
               <Input
-                id="role"
-                name="role"
+                id="occupation"
+                name="occupation"
                 value={state.values.occupation}
                 onChange={handleChange}
                 className="border-[#1E7FDF]/20 focus-visible:ring-[#1E7FDF]/50"
@@ -316,8 +316,8 @@ function AddEditContactForm({
                 Birthday
               </Label>
               <CalendarInput
-                id="lastContact"
-                name="lastContact"
+                id="birthday"
+                name="birthday"
                 value={state.values.birthday}
                 onChange={handleChange}
               />
